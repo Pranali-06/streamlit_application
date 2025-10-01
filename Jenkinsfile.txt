@@ -34,8 +34,7 @@ pipeline {
         success {
             echo '✅ Streamlit app deployed successfully on port 8501!'
         }
-        failure {
-            echo '❌ Build failed. Please check logs.'
+        
         }
     }
 }
