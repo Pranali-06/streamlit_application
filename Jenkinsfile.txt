@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // GitHub repo clone
+                checkout scm
+            }
+        }
+
+        stage('Setup Python Env') {
+            steps {
+                sh '''
+                  python3 -m venv venv
+                  . venv/bin/activate
+                  pip install --upgrade pip
+                  pip install -r requirements.txt
+                '''
+            }
+        }
+
+        stage('Run Streamlit App') {
+            steps {
+                sh '''
+                  . venv/bin/activate
+                  nohup streamlit run app.py --server.port 8501 --server.headless true &
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Streamlit app deployed successfully on port 8501!'
+        }
+        failure {
+            echo '❌ Build failed. Please check logs.'
+        }
+    }
+}
