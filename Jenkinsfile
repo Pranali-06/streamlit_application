@@ -2,40 +2,28 @@ pipeline {
     agent any
 
     environment {
-        VENV = 'venv'
-        APP_FILE = 'app.py'  // your main Streamlit file
+        APP_FILE = 'app.py'
         APP_PORT = '8501'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo 'Checking out code from GitHub...'
                 git branch: 'master', url: 'https://github.com/Pranali-06/streamlit_application.git'
             }
         }
 
-        stage('Check Python Version') {
+        stage('Install Dependencies') {
             steps {
-                sh 'python3 --version || python --version'
-            }
-        }
-
-        stage('Setup Python Environment') {
-            steps {
-                echo 'Setting up Python virtual environment...'
-                sh 'python3 -m venv $VENV || python -m venv $VENV'
-                sh '. $VENV/bin/activate && pip install --upgrade pip'
-                sh '. $VENV/bin/activate && pip install -r requirements.txt || pip install streamlit'
+                sh 'python3 -m pip install --upgrade pip'
+                sh 'python3 -m pip install --user -r requirements.txt || python3 -m pip install --user streamlit'
             }
         }
 
         stage('Test Streamlit Run') {
             steps {
-                echo 'Testing Streamlit app...'
                 sh """
-                . $VENV/bin/activate
-                streamlit run $APP_FILE --server.headless true --server.port $APP_PORT &
+                python3 -m streamlit run $APP_FILE --server.headless true --server.port $APP_PORT &
                 sleep 10
                 pkill -f streamlit || true
                 """
@@ -45,10 +33,10 @@ pipeline {
 
     post {
         success {
-            echo 'Build and Streamlit test successful!'
+            echo '✅ Streamlit build and test successful!'
         }
         failure {
-            echo 'Build failed! Check console logs for details.'
+            echo '❌ Build failed!'
         }
     }
 }
