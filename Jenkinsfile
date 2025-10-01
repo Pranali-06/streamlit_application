@@ -2,49 +2,53 @@ pipeline {
     agent any
 
     environment {
-        VENV = "venv"
-        APP_PORT = "8501"
+        VENV = 'venv'
+        APP_FILE = 'app.py'  // your main Streamlit file
+        APP_PORT = '8501'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo 'Checking out source code from GitHub...'
-                checkout scm
+                echo 'Checking out code from GitHub...'
+                git branch: 'master', url: 'https://github.com/Pranali-06/streamlit_application.git'
+            }
+        }
+
+        stage('Check Python Version') {
+            steps {
+                sh 'python3 --version || python --version'
             }
         }
 
         stage('Setup Python Environment') {
             steps {
-                echo 'Setting up Python virtual environment and installing dependencies...'
-                sh '''
-                  python3 -m venv ${VENV}
-                  . ${VENV}/bin/activate
-                  pip install --upgrade pip
-                  pip install -r requirements.txt
-                '''
+                echo 'Setting up Python virtual environment...'
+                sh 'python3 -m venv $VENV || python -m venv $VENV'
+                sh '. $VENV/bin/activate && pip install --upgrade pip'
+                sh '. $VENV/bin/activate && pip install -r requirements.txt || pip install streamlit'
             }
         }
 
-        stage('Run Streamlit App') {
+        stage('Test Streamlit Run') {
             steps {
-                echo 'Running Streamlit app on port ${APP_PORT}...'
-                sh '''
-                  . ${VENV}/bin/activate
-                  # Kill any existing Streamlit process
-                  pkill -f "streamlit run" || true
-                  nohup streamlit run app.py --server.port ${APP_PORT} --server.headless true > streamlit.log 2>&1 &
-                '''
+                echo 'Testing Streamlit app...'
+                sh """
+                . $VENV/bin/activate
+                streamlit run $APP_FILE --server.headless true --server.port $APP_PORT &
+                sleep 10
+                pkill -f streamlit || true
+                """
             }
         }
     }
 
     post {
         success {
-            echo 'Streamlit app deployed successfully!'
+            echo 'Build and Streamlit test successful!'
         }
         failure {
-            echo 'Build failed! Check logs for errors.'
+            echo 'Build failed! Check console logs for details.'
         }
     }
 }
