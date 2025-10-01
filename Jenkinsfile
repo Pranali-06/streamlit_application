@@ -2,30 +2,32 @@ pipeline {
     agent any
 
     environment {
-        APP_FILE = 'app.py'
+        IMAGE_NAME = 'streamlit_app'        
+        CONTAINER_NAME = 'streamlit_container'
         APP_PORT = '8501'
     }
 
     stages {
         stage('Checkout') {
             steps {
+                echo 'Checking out code from GitHub...'
                 git branch: 'master', url: 'https://github.com/Pranali-06/streamlit_application.git'
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Build Docker Image') {
             steps {
-                sh 'python3 -m pip install --upgrade pip'
-                sh 'python3 -m pip install --user -r requirements.txt || python3 -m pip install --user streamlit'
+                echo 'Building Docker image...'
+                sh "docker build -t streamlit_app ."
             }
         }
 
-        stage('Test Streamlit Run') {
+        stage('Run Docker Container') {
             steps {
+                echo 'Running Docker container...'
                 sh """
-                python3 -m streamlit run $APP_FILE --server.headless true --server.port $APP_PORT &
-                sleep 10
-                pkill -f streamlit || true
+                docker rm -f streamlit_container || true
+                docker run -d --name streamlit_container -p 8501:8501 streamlit_app 
                 """
             }
         }
@@ -33,10 +35,11 @@ pipeline {
 
     post {
         success {
-            echo '✅ Streamlit build and test successful!'
+            echo "Docker build and container run successful!"
+            echo "Access the app at http://54.234.8.163:8501"
         }
         failure {
-            echo '❌ Build failed!'
+            echo '❌ Build or container run failed. Check console output.'
         }
     }
 }
