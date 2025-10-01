@@ -25,9 +25,10 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 echo 'Running Docker container...'
-                sh  docker rm -f streamlit_container || true
+                sh """ 
+                docker rm -f streamlit_container || true
                 sh docker run -d --name streamlit_container -p 8501:8501 streamlit_app 
-                
+                """
             }
         }
     }
