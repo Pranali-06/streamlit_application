@@ -38,10 +38,9 @@ pipeline {
     post {
         success {
             echo "Deployment Successful!"
-            echo "Open your browser: http://98.84.113.166:8501"
+            
         }
-        failure {
-            echo "❌ Build/Deploy failed. Check logs."
-        }
+        
+    
     }
 }
