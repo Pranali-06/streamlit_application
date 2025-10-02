@@ -1,21 +1,22 @@
 
 FROM python:3.10-slim
 
-
-EXPOSE 8501
-
-RUN apt-get update \
-    && apt-get install -y python3 \
-       build-essential \
-       software-properties-common \
-       git \
-    && rm -rf /var/lib/apt/lists/*
-
-
 WORKDIR /app
 
 COPY . /app
 
-RUN pip3 install -r requirements.txt
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       python3 \
+       python3-pip \
+       build-essential \
+       git \
+    && rm -rf /var/lib/apt/lists/*
 
-ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+
+EXPOSE 8501
+
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
