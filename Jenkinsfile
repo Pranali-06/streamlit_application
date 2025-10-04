@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "streamlit_app"
+        DOCKER_IMAGE = "streamlit-app"
         CONTAINER_NAME = "streamlit_container"
         APP_PORT = "8501"
     }
@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo "Pulling source code from GitHub"
+                echo "Checking out source code..."
                 checkout scm
             }
         }
@@ -18,29 +18,24 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo "Building Docker image..."
-                sh """
-                    docker build -t streamlit_app .
-                """
+                sh "docker build -t streamlit-app ."
             }
         }
 
-        stage('Run Docker Container') {
+        stage('Remove Old Container') {
             steps {
-                echo "Running container..."
-                sh """
-                    docker rm -f streamlit_container || true
-                    docker run -d --name streamlit_container -p 8501:8501 streamlit_app
-                """
+                echo "Removing old container if exists..."
+                sh "docker rm -f streamlit_container || true"
             }
         }
-    }
 
-    post {
-        success {
-            echo "Deployment Successful!"
+        stage('Run Container') {
+            steps {
+                echo "Running new container..."
+                sh docker run -d --name streamlit_container -p 8501:8501 streamlit-app
+                    
             
+            }
         }
-        
-    
     }
 }
