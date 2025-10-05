@@ -12,10 +12,13 @@ pipeline {
                 checkout scm
             }
         }
-
         stage('Build Image') {
-            steps {
-                sh 'docker build -t streamlit-app .'
+    steps {
+        sh '''
+            mkdir -p WORKSPACE/.docker
+            export DOCKER_CONFIG=WORKSPACE/.docker
+            docker build -t streamlit-app .
+        '''
             }
         }
 
