@@ -15,7 +15,7 @@ pipeline {
         stage('Build Image') {
     steps {
         sh '''
-            /var/lib/jenkins/WORKSPACE/.docker
+            mkdir -p WORKSPACE/.docker
             export DOCKER_CONFIG=WORKSPACE/.docker
             docker build -t streamlit-app .
         '''
